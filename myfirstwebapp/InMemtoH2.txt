@@ -1,0 +1,63 @@
+WE will convert the project from static list to H2 Databse.
+We will start off by creating the Todo Bean as Entity.
+h2 will automatically create a table for this bean. 
+
+Now we can add some values.
+In the source/main/resources we will make a data.sql
+WE will simply write an insertion command.
+
+We will potentially see an error in the console.
+This error comes because the data.sql is executed even before the database is created by spring.
+To handle this we will add a configuration in the app.poperties.
+Spring.jpa.defer-datasource-initialization=true
+
+insert into todo (id,username,description,target_date,done)
+values (10001,'soumik','Get Aws from H2 Database',CURRENT_DATE(),false);
+This is the SQL command.
+
+
+This will do the Trick.
+
+NOTE: Until here we are adding static data by typing SQL.
+
+
+What we do is Create a Class that will handle the TodoRepository
+@Repository ensures that our class talks to the Database
+So we will create an interface Extending the JpaRepository
+
+package com.example.in28minutes.springboot.myfirstwebapp.todo;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface TodoRepository extends JpaRepository<Todo, Integer>{
+	public List<Todo> findByUsername(String username);
+}
+
+
+To find by Id in the new Todo Controller we can simply do it by FindById
+But to find by other column names we need to add a function by following a name convention as shown above.
+
+WE are done.
+WE will create a copy of the TodoController and rename it as TodoControllerJpa
+
+here we will make use of a TodoRepository.
+Add the Construction injection.
+Then in the list todos function we will do todoRepository.findByusername(username).
+This will load up the Todos stored in the h2 Database.
+
+
+@RequestMapping("/list-todos")
+public String listAllTodos(ModelMap model) {
+	String username = getLoggedInUsername(model);		
+	
+	List<Todo> todos = todoRepository.findByUsername(username);
+	model.addAttribute("todos", todos);
+	return "listTodos";
+}
+
+This is the changed piece of the Code. 
+Line no 57 shows it.

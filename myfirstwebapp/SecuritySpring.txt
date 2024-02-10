@@ -1,0 +1,86 @@
+The Spring Security Setup is Not that Complex to begin with.
+WE simply add a Dependency.
+
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+		
+Simply adding it will do te magic and will create a form with username and passowrd routed to "/".
+
+Now to setup the Username and passowrd. we need to Make a Seperate Spring Security Configuration class.
+
+
+package com.example.in28minutes.springboot.myfirstwebapp.security;
+import java.util.function.Function;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+import static org.springframework.security.config.Customizer.withDefaults;
+
+@Configuration
+public class SpringSecurityConfiguration {
+
+	@Bean
+	public InMemoryUserDetailsManager createuserDetailsManager()
+	{		
+		UserDetails userDetails1 = createNewUser("soumik", "1234");
+		UserDetails userDetails2 = createNewUser("miko", "12345");	
+		return new InMemoryUserDetailsManager(userDetails1,userDetails2);
+	}
+	private UserDetails createNewUser(String username, String password) {
+		Function<String, String> passwordEncoderFunc= input-> passwordEncoder().encode(input);
+		UserDetails userDetails = User.builder().passwordEncoder(passwordEncoderFunc)
+		.username(username)
+		.password(password)
+		.roles("USER","ADMIN")
+		.build();
+		return userDetails;
+	}
+	@Bean
+	public PasswordEncoder passwordEncoder()
+	{
+		return new BCryptPasswordEncoder();
+	}
+	
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
+	{
+		http.authorizeHttpRequests(
+				auth -> auth.anyRequest().authenticated()
+				);
+		http.formLogin(withDefaults());
+		http.csrf().disable();
+		http.headers().frameOptions().disable();
+		return http.build();
+	}
+}
+
+As we can see above in the Line number 31 to 45. Here we are creating multiple users.
+We are also encoding the password using the passwordEncoder function using BCrypt.
+The inMemoryUserDetail manager helps us to set up new user for the Spring Security.
+
+
+
+
+Now After we are done with the Spring Security basic configuration. 
+WE will move our project from a static list to a in mem h2 database.
+
+But we cannot directly access the h2-console. 
+This is because of the Spring Security does not allow Cross Site resource forging.
+It also does not allow frames which are something that are being used by the h2 console.
+
+So we will override them using the function written above.
+
+WE will keep the form login behaviour same but will disable the frames and csrf behaviour.
+WE will need a withDefaults() function which is brought from the -->
+import static org.springframework.security.config.Customizer.withDefaults;
+A static import is made for this purpose so that no object creation is required.
+
+Basically this is the full fledged setup of the Spring Security allowing access to the H2 console as well.

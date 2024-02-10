@@ -1,0 +1,263 @@
+<c:forEach items="${request.getAttribute('todos')}" var="todo">
+				<tr>
+					<td>Hello</td>
+					<td><c:out value="${todo.id}" /></td>
+					<td><c:out value="${todo.description}" /></td>
+					<td><c:out value="${todo.targetDate}" /></td>
+					<td><c:out value="${todo.done}" /></td>
+				</tr>
+			</c:forEach>
+
+
+<%=request.getAttribute("name")%>
+		
+				
+		<% 
+			String errorMsg = (String) request.getAttribute("errorMsg");
+			if (errorMsg != null && !errorMsg.isEmpty()) {
+		%>
+			<pre><%= errorMsg %></pre>
+		<%
+			}
+		%>	
+		
+/META-INF/resources/webjars/bootstrap/5.1.3/css/bootstrap.min.css		
+/META-INF/resources/webjars/jquery/3.6.0/jquery.min.js
+/META-INF/resources/webjars/bootstrap/5.1.3/js/bootstrap.min.js	
+My POM.XML
+
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>3.3.0-M1</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.example.in28minutes.springboot</groupId>
+	<artifactId>myfirstwebapp</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>myfirstwebapp</name>
+	<description>Demo project for Spring Boot</description>
+	<properties>
+		<java.version>21</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+			<scope>provided</scope>
+			</dependency>
+		
+		<dependency>
+			<groupId>jakarta.servlet.jsp.jstl</groupId>
+			<artifactId>jakarta.servlet.jsp.jstl-api</artifactId>
+			</dependency>
+		
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>glassfish-jstl</artifactId>
+			<version>11.0.20</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>jakarta.el</groupId>
+			<artifactId>jakarta.el-api</artifactId>
+			<version>4.0.0</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+	<repositories>
+		<repository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	<pluginRepositories>
+		<pluginRepository>
+			<id>spring-milestones</id>
+			<name>Spring Milestones</name>
+			<url>https://repo.spring.io/milestone</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>
+
+
+Validation is a Critical Process to implementing in the Spring ENV.
+To start off we need to Add a dependency spring starter validation to the Pom.xml
+
+Next what we need to do is add a Taglib form to the JSP file what we are trying to bind to the Bean.
+Here it means that the fields for eg name, desc, will be binded to the Todo Bean that we have created.
+The advantage is that everytime we create a new field we wont require to manually do the work of fetching them using requestParams.
+
+SO this is the Syntax that we are using in the todo.jsp
+
+<%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
+<html>
+	<head>
+	<link href="webjars/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+		<title> Add A Todo</title>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Enter Todo Details</h1>
+			<form:form method="post" modelAttribute="todo">
+				<form:input type="text" path="description"/>
+				<form:input type="hidden" path="id"/>
+				<form:input type="hidden" path="done"/>
+				<input type="submit" class="btn btn-success"/>
+			</form:form>
+		</div>
+	<script src="webjars/jquery/3.6.0/jquery.min.js"></script>
+	<script src="webjars/bootstrap/5.1.3/js/bootstrap.min.js"></script>
+	</body>
+</html>
+
+
+This has the taglib and the prefix form. 
+
+in the form we are configuring a Model attribute named "todo". This name should be same with the one that we are using as a parameter in the TodoController.
+The Todo Controller Function looks something like this.
+
+
+
+
+@RequestMapping(value="/add-todo", method = RequestMethod.GET)
+	public String showNewTodoPage(ModelMap model)
+	{
+		Todo todo=new Todo(0,(String)model.get("name"),"",LocalDate.now().plusYears(1),false);
+		model.put("todo", todo);
+		return "todo";
+	}
+	
+	
+
+@RequestMapping(value="/add-todo", method = RequestMethod.POST)
+	public String addNewTodo(ModelMap model,Todo todo) --> This is the name of the attribute that we have set earlier in the modal attribute.
+	{
+		todoService.addTodo((String)model.get("name"), todo.getDescription(),LocalDate.now().plusYears(1), false);
+		return "redirect:list-todos";
+	}
+
+
+What we are doing here is... WE are performing a 2 way binding between the JSP and the Controller.
+All the items can now be accessed in the JSP using a path syntax as shown earlier. <form:input type="text" path="description"/>
+So this will bind the specific field of the JSP to the Description variable of the TODO Bean.
+
+Summary:
+
+Whenever we send a get Request to addnewTodo function we are performing a one way binding.
+Since the new Todo that we are creating we can verify it by putting a value in the Description which is currently empty.
+
+
+@RequestMapping(value="/add-todo", method = RequestMethod.GET)
+	public String showNewTodoPage(ModelMap model)
+	{
+		Todo todo=new Todo(0,(String)model.get("name"),"",LocalDate.now().plusYears(1),false);   ---> WE can change the desc field and it will appear in the JSP form default value.
+		model.put("todo", todo);
+		return "todo";
+	}
+	
+@RequestMapping(value="/add-todo", method = RequestMethod.POST)
+	public String addNewTodo(ModelMap model,Todo todo) --> The todo in the model attribute is binded to this variable. 2nd binding is performed.
+	{
+		todoService.addTodo((String)model.get("name"), todo.getDescription(),LocalDate.now().plusYears(1), false);
+		return "redirect:list-todos";
+	}
+
+
+Now whenever we are entering a new value and hitting the submit we are performing a Post Request.
+Now Here the 2nd binding occurs.
+
+Bean-->form (get) and Form ---> bean(POST).
+
+
+Once Everything is Set Up. 
+There is another simple step to add the validation.
+
+In the Todo bean or Todo class where we have created the Todo format with the member variables.
+we will perform the following.
+
+
+@Size(min = 10,message="Enter atleast 10 Characters")
+private String description;
+
+
+This Annotation will make sure that the entered value is of Size min 10 and the message is shown if it fails.
+Also we need to Add @Valid Todo todo to the Post Method controller in the TodoController.
+
+
+@RequestMapping(value="/add-todo", method = RequestMethod.POST)
+	public String addNewTodo(ModelMap model,@Valid Todo todo) -->@Valid is added to trigger the Validation.
+	{
+		todoService.addTodo((String)model.get("name"), todo.getDescription(),LocalDate.now().plusYears(1), false);
+		return "redirect:list-todos";
+	}
+
+The Error Message will be shown in an whitelable page.
+
+Now to Show it in the Page itself we will add the BindingResult attribute to the Post method above.
+if result.hasErrors() we will return the same jsp page i.e. todo.
+
+Now to show the error in line with the description the taglib library offers <form:error path="description"/>
+This will be triggered and will show the message that we have set earlier if there is an error with the defined path in this case description. 
+
+<div class="container">
+			<h1>Enter Todo Details</h1>
+			<form:form method="post" modelAttribute="todo">
+				<form:input type="text" path="description"/>
+				<form:input type="hidden" path="id"/>
+				<form:input type="hidden" path="done"/>
+				<input type="submit" class="btn btn-success"/>
+			<form:errors path="description" cssClass="text-warning"/> --> This is the Tag that we are using.
+			
+			</form:form>
+		</div>
+		
+
+@RequestMapping(value="/add-todo", method = RequestMethod.POST)
+	public String addNewTodo(ModelMap model,@Valid Todo todo, BindingResult result) --> Binding Result Variable
+	{
+		if(result.hasErrors()) { -->Checking if it has any errors.
+			return "todo"; --> retuning the same page refusing to accept the value.
+		}
+		todoService.addTodo((String)model.get("name"), todo.getDescription(),LocalDate.now().plusYears(1), false);
+		return "redirect:list-todos";
+	}
+	
